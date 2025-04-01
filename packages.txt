@@ -1,0 +1,7 @@
+htop
+curl
+git
+tree
+neofetch
+vim
+wget
