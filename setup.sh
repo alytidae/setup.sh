@@ -8,5 +8,6 @@ if [[ "$SETUP_START" != "true" ]]; then
   exit 1
 fi
 
-# source modules/install-packages-"$SETUP_DISTRO".sh
+source modules/install-packages-"$SETUP_DISTRO".sh
 source modules/select-disk.sh
+source modeles/create-user.sh
