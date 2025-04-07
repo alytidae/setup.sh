@@ -45,12 +45,12 @@ done
 
 # 📤 Экспорт переменных
 if [[ "$DISK" == *"nvme"* ]]; then
-  export SETUP_EFI="${DISK}p1"
-  export SETUP_ROOT="${DISK}p2"
+  export SETUP_PART_EFI="${DISK}p1"
+  export SETUP_PART_ROOT="${DISK}p2"
 else
-  export SETUP_EFI="${DISK}1"
-  export SETUP_ROOT="${DISK}2"
+  export SETUP_PART_EFI="${DISK}1"
+  export SETUP_PART_ROOT="${DISK}2"
 fi
 
-echo "✅ EFI:  $SETUP_EFI"
-echo "✅ ROOT: $SETUP_ROOT (to be encrypted)"
+echo "✅ EFI:  $SETUP_PART_EFI"
+echo "✅ ROOT: $SETUP_PART_ROOT (to be encrypted)"

@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+echo "CRYPTSETUP!"
 
 cryptsetup luksFormat --type luks1 $SETUP_PART_ROOT
 
