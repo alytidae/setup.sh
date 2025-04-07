@@ -1,62 +1,54 @@
 #!/bin/bash
 set -e
 
-# ========================
-# ⚙️ Partitioning disk for EFI + LUKS using fdisk
-# ========================
+# ========== Settings ==========
+DISK="${SETUP_DISK:?SETUP_DISK not set}"
 
-# Make sure SETUP_DISK is set
-if [[ -z "$SETUP_DISK" || ! -b "$SETUP_DISK" ]]; then
-  echo "❌ SETUP_DISK is not set or is not a valid block device"
-  exit 1
-fi
+echo "💥 Wiping $DISK and creating new GPT layout..."
 
-echo "🔧 Partitioning $SETUP_DISK with fdisk..."
-
-# Destroy existing partition table and create new GPT layout
-fdisk "$SETUP_DISK" <<EOF
+# ========== Create partitions via fdisk ==========
+fdisk "$DISK" <<EOF
 g
+n
+1
+
++512M
+t
+1
+n
+2
+
+
 w
 EOF
 
-fdisk "$SETUP_DISK" <<EOF
-g             # Create new GPT partition table
-n             # New partition (EFI)
-1             # Partition number
-              # Default first sector
-+512M         # Last sector
-t             # Change partition type
-1             # Select partition 1
-1             # EFI System
+echo "✅ Partitioning complete (fdisk)"
 
-n             # New partition (root)
-2             # Partition number
-              # Default first sector
-              # Use rest of the disk
-t             # Change type
-2             # Select partition 2
-20            # Linux filesystem (ext4/btrfs)
+# ========== Reload partition table ==========
+echo "🔁 Running partprobe..."
+partprobe "$DISK"
+udevadm settle
 
-w             # Write changes
-EOF
+# ========== Wait for partitions to appear ==========
+for dev in 1 2; do
+  part="${DISK}${dev}"
+  # for nvme devices add 'p' between disk and number
+  [[ "$DISK" == *"nvme"* ]] && part="${DISK}p${dev}"
 
-# Optional: show result
-echo
-lsblk "$SETUP_DISK"
+  until [ -b "$part" ]; do
+    echo "⏳ Waiting for $part..."
+    sleep 0.2
+  done
+done
 
-# Set environment variables
-if [[ "$SETUP_DISK" == *"nvme"* ]]; then
-  SETUP_PART_EFI="${SETUP_DISK}p1"
-  SETUP_PART_ROOT="${SETUP_DISK}p2"
+# ========== Export partition paths ==========
+if [[ "$DISK" == *"nvme"* ]]; then
+  export SETUP_EFI="${DISK}p1"
+  export SETUP_ROOT="${DISK}p2"
 else
-  SETUP_PART_EFI="${SETUP_DISK}1"
-  SETUP_PART_ROOT="${SETUP_DISK}2"
+  export SETUP_EFI="${DISK}1"
+  export SETUP_ROOT="${DISK}2"
 fi
 
-export SETUP_PART_EFI
-export SETUP_PART_ROOT
-
-echo
-echo "✅ Partitioning complete (fdisk)."
-echo "📦 EFI:  $SETUP_PART_EFI"
-echo "🔐 ROOT: $SETUP_PART_ROOT (to be encrypted)"
+echo "📦 EFI: $SETUP_EFI"
+echo "📦 ROOT: $SETUP_ROOT (to be encrypted)"
