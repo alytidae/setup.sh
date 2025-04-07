@@ -14,7 +14,10 @@ fi
 echo "🔧 Partitioning $SETUP_DISK with fdisk..."
 
 # Destroy existing partition table and create new GPT layout
-sgdisk --zap-all "$SETUP_DISK"
+fdisk "$SETUP_DISK" <<EOF
+g
+w
+EOF
 
 fdisk "$SETUP_DISK" <<EOF
 g             # Create new GPT partition table
