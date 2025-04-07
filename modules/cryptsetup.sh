@@ -24,6 +24,7 @@ mount $SETUP_PART_EFI /mnt/boot/efi
 mkdir -p /mnt/var/db/xbps/keys
 cp /var/db/xbps/keys/* /mnt/var/db/xbps/keys/
 
-xbps-install -Sy -R https://repo-default.voidlinux.org/current -r /mnt base-system cryptsetup grub-x86_64-efi lvm2 xtools
+xbps-install -Sy -R https://repo-default.voidlinux.org/current -r /mnt base-system cryptsetup grub-x86_64-efi lvm2
+xbps-install -Sy -R https://repo-default.voidlinux.org/current xtools
 xgenfstab /mnt > /mnt/etc/fstab
 
