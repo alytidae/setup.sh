@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+exec > >(tee setup.log) 2>&1
 
 source config.sh
 
