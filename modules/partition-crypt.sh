@@ -1,12 +1,10 @@
 #!/bin/bash
 set -e
 
-# ========== Settings ==========
 DISK="${SETUP_DISK:?SETUP_DISK not set}"
 
 echo "💥 Wiping $DISK and creating new GPT layout..."
 
-# ========== Create partitions via fdisk ==========
 fdisk "$DISK" <<EOF
 g
 n
@@ -23,25 +21,29 @@ w
 EOF
 
 echo "✅ Partitioning complete (fdisk)"
+echo "⏳ Waiting for kernel to detect new partitions..."
 
-# ========== Reload partition table ==========
-echo "🔁 Running partprobe..."
-partprobe "$DISK"
-udevadm settle
-
-# ========== Wait for partitions to appear ==========
+# ⌛ Ждём появления разделов
 for dev in 1 2; do
   part="${DISK}${dev}"
-  # for nvme devices add 'p' between disk and number
   [[ "$DISK" == *"nvme"* ]] && part="${DISK}p${dev}"
 
-  until [ -b "$part" ]; do
-    echo "⏳ Waiting for $part..."
+  for i in {1..20}; do
+    if [[ -b "$part" ]]; then
+      echo "📦 Found $part"
+      break
+    fi
     sleep 0.2
   done
+
+  # Если не появилось — ошибка
+  if [[ ! -b "$part" ]]; then
+    echo "❌ Partition $part did not appear. Aborting."
+    exit 1
+  fi
 done
 
-# ========== Export partition paths ==========
+# 📤 Экспорт переменных
 if [[ "$DISK" == *"nvme"* ]]; then
   export SETUP_EFI="${DISK}p1"
   export SETUP_ROOT="${DISK}p2"
@@ -50,5 +52,5 @@ else
   export SETUP_ROOT="${DISK}2"
 fi
 
-echo "📦 EFI: $SETUP_EFI"
-echo "📦 ROOT: $SETUP_ROOT (to be encrypted)"
+echo "✅ EFI:  $SETUP_EFI"
+echo "✅ ROOT: $SETUP_ROOT (to be encrypted)"
