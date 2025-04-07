@@ -16,8 +16,6 @@ mkfs.ext4 -L root /dev/voidvm/root
 mkswap /dev/voidvm/swap
 
 mount /dev/voidvm/root /mnt
-mkdir -p /mnt/home
-mount /dev/voidvm/home /mnt/home
 
 mkfs.vfat $SETUP_PART_EFI
 mkdir -p /mnt/boot/efi
