@@ -1,8 +1,17 @@
 #!/bin/bash
 set -e
 
-echo "xchroot and reconfigure"
-xchroot /mnt
+echo "chroot and reconfigure"
+
+cp /etc/resolv.conf /mnt/etc/resolv.conf
+cp /etc/hosts /mnt/etc/hosts/
+
+mount -t proc none /mnt/proc
+mount -t sysfs none /mnt/sys
+mount --rbind /dev /mnt/dev
+mount --rbind /run /mnt/run
+chroot /mnt
+
 chown root:root /
 chmod 755 /
 passwd root
