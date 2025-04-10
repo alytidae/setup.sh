@@ -4,7 +4,7 @@ set -e
 echo "chroot and reconfigure"
 
 cp /etc/resolv.conf /mnt/etc/resolv.conf
-cp /etc/hosts /mnt/etc/hosts/
+cp /etc/hosts /mnt/etc/hosts
 
 mount -t proc none /mnt/proc
 mount -t sysfs none /mnt/sys
